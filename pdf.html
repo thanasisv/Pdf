@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Σελίδα με Αναζήτηση PDF</title>
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+</head>
+<body>
+    <h1>Σελίδα με Αναζήτηση PDF</h1>
+
+    <div>
+        <label for="searchInput">Αναζήτηση:</label>
+        <input type="text" id="searchInput">
+        <button onclick="searchPDF()">Αναζήτηση</button>
+    </div>
+
+    <div>
+        <canvas id="pdfViewer" style="border: 1px solid black;"></canvas>
+    </div>
+
+    <script>
+        // Φόρτωση του PDF
+        const pdfPath = 'https://drive.google.com/file/d/1sLzNpfWEDbsUyJXe2Y_sgX6DgKLiyO1N/view?usp=drivesdk';
+        pdfjsLib.getDocument(pdfPath).promise.then(function(pdfDoc) {
+            // Εμφάνιση του PDF σε έναν viewer
+            const pdfViewer = document.getElementById('pdfViewer');
+            pdfViewer.height = window.innerHeight;
+            const pdfRenderer = pdfDoc.getPage(1).then(function(page) {
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale });
+                const canvas = document.getElementById('pdfViewer');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                page.render(renderContext);
+            });
+        });
+
+        // Αναζήτηση στο PDF
+        function searchPDF() {
+            const searchTerm = document.getElementById('searchInput').value;
+            pdfjsLib.getDocument(pdfPath).promise.then(function(pdfDoc) {
+                for (let pageNumber = 1; pageNumber <= pdfDoc.numPages; pageNumber++) {
+                    pdfDoc.getPage(pageNumber).then(function(page) {
+                        page.getTextContent().then(function(textContent) {
+                            textContent.items.forEach(function (text) {
+                                if (text.str.includes(searchTerm)) {
+                                    alert('Βρέθηκε στη σελίδα ' + pageNumber);
+                                    // Εδώ μπορείτε να προσθέσετε κώδικα για περισσότερες ενέργειες
+                                }
+                            });
+                        });
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
